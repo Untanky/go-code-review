@@ -26,12 +26,11 @@ type api struct {
 }
 
 func New(cfg config.ApiConfig, svc Service) *api {
-	gin.SetMode(gin.ReleaseMode)
-	r := gin.New()
-	r.Use(gin.Recovery())
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	api := &api{
-		gin: r,
+		gin: router,
 		cfg: cfg,
 		svc: svc,
 	}
@@ -39,31 +38,35 @@ func New(cfg config.ApiConfig, svc Service) *api {
 }
 
 func (a *api) withServer() *api {
+	a.srv = &http.Server{
+		Addr:    fmt.Sprintf(":%d", a.cfg.Port),
+		Handler: a.gin,
+	}
 
-	ch := make(chan *api)
-	go func() {
-		a.srv = &http.Server{
-			Addr:    fmt.Sprintf(":%d", a.cfg.Port),
-			Handler: a.gin,
-		}
-		ch <- a
-	}()
-
-	return <-ch
+	return a
 }
 
 func (a *api) withRoutes() *api {
+	// we'll keep this routes for backward compatibility
+	// but this does not follow RESTful API design
 	apiGroup := a.gin.Group("/api")
 	apiGroup.POST("/apply", a.ApplyCoupon)
 	apiGroup.POST("/create", a.CreateCoupon)
-	apiGroup.GET("/coupons", a.GetCoupon)
+	apiGroup.GET("/coupons", a.GetCoupons)
+
+	couponV2 := a.gin.Group("/api/v2/coupon")
+	couponV2.POST("/apply", a.ApplyCoupon)
+	couponV2.POST("", a.CreateCoupon)
+	couponV2.GET("", a.GetCoupons)
 	return a
 }
 
 func (a *api) Start() {
-	if err := a.srv.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		if err := a.srv.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 }
 
 func (a *api) Close() {
