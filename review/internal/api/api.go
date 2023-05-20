@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"coupon_service/internal/entity"
+	"coupon_service/internal/config"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,27 +18,22 @@ type Service interface {
 	GetCoupons([]string) ([]entity.Coupon, error)
 }
 
-type Config struct {
-	Host string
-	Port int
-}
-
 type API struct {
 	srv *http.Server
-	MUX *gin.Engine
+	gin *gin.Engine
 	svc Service
-	CFG Config
+	cfg config.ApiConfig
 }
 
-func New[T Service](cfg Config, svc T) API {
+func New(cfg config.ApiConfig, svc Service) API {
 	gin.SetMode(gin.ReleaseMode)
 	r := new(gin.Engine)
 	r = gin.New()
 	r.Use(gin.Recovery())
 
 	return API{
-		MUX: r,
-		CFG: cfg,
+		gin: r,
+		cfg: cfg,
 		svc: svc,
 	}.withServer()
 }
@@ -47,8 +43,8 @@ func (a API) withServer() API {
 	ch := make(chan API)
 	go func() {
 		a.srv = &http.Server{
-			Addr:    fmt.Sprintf(":%d", a.CFG.Port),
-			Handler: a.MUX,
+			Addr:    fmt.Sprintf(":%d", a.cfg.Port),
+			Handler: a.gin,
 		}
 		ch <- a
 	}()
@@ -57,7 +53,7 @@ func (a API) withServer() API {
 }
 
 func (a API) withRoutes() API {
-	apiGroup := a.MUX.Group("/api")
+	apiGroup := a.gin.Group("/api")
 	apiGroup.POST("/apply", a.Apply)
 	apiGroup.POST("/create", a.Create)
 	apiGroup.GET("/coupons", a.Get)

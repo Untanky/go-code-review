@@ -1,14 +1,18 @@
 package config
 
 import (
-	"coupon_service/internal/api"
 	"log"
 
 	"github.com/brumhard/alligotor"
 )
 
+type ApiConfig struct {
+	Host string
+	Port int
+}
+
 type Config struct {
-	API api.Config
+	API ApiConfig
 }
 
 func New() Config {
