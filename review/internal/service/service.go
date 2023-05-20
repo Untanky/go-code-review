@@ -9,7 +9,7 @@ import (
 
 type Repository interface {
 	FindByCode(string) (*Coupon, error)
-	Save(Coupon) error
+	Save(*Coupon) error
 }
 
 type Service struct {
@@ -22,7 +22,7 @@ func New(repo Repository) Service {
 	}
 }
 
-func (s Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
+func (s *Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
 	b = &basket
 	coupon, err := s.repo.FindByCode(code)
 	if err != nil {
@@ -37,10 +37,10 @@ func (s Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
 		return
 	}
 
-	return nil, fmt.Errorf("Tried to apply discount to negative value")
+	return nil, fmt.Errorf("tried to apply discount to negative value")
 }
 
-func (s Service) CreateCoupon(discount int, code string, minBasketValue int) any {
+func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) error {
 	coupon := Coupon{
 		Discount:       discount,
 		Code:           code,
@@ -48,27 +48,37 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) any
 		ID:             uuid.NewString(),
 	}
 
-	if err := s.repo.Save(coupon); err != nil {
+	if err := s.repo.Save(&coupon); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s Service) GetCoupons(codes []string) ([]Coupon, error) {
-	coupons := make([]Coupon, 0, len(codes))
+func (s *Service) GetCoupons(codes []string) ([]*Coupon, error) {
+	coupons := make([]*Coupon, 0, len(codes))
 	var e error = nil
 
 	for idx, code := range codes {
 		coupon, err := s.repo.FindByCode(code)
-		if err != nil {
-			if e == nil {
-				e = fmt.Errorf("code: %s, index: %d", code, idx)
-			} else {
-				e = fmt.Errorf("%w; code: %s, index: %d", e, code, idx)
-			}
+		if err == nil {
+			e = appendError(e, fmt.Errorf("code: %s, index: %d, err: %w", code, idx, err))
+			continue
 		}
-		coupons = append(coupons, *coupon)
+
+		coupons[idx] = coupon
 	}
 
-	return coupons, e
+	if e != nil {
+		return nil, e
+	}
+
+	return coupons, nil
+}
+
+func appendError(currentError error, nextError error) error {
+	if currentError == nil {
+		currentError = nextError
+	} else {
+		currentError = fmt.Errorf("%w; %w", currentError, nextError)
+	}
 }

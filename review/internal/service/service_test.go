@@ -1,10 +1,14 @@
-package service
+package service_test
+
+// TODO: properly
 
 import (
 	"coupon_service/internal/repository/memdb"
 	"coupon_service/internal/service/entity"
 	"reflect"
 	"testing"
+
+	. "coupon_service/internal/service"
 )
 
 func TestNew(t *testing.T) {
@@ -16,7 +20,7 @@ func TestNew(t *testing.T) {
 		args args
 		want Service
 	}{
-		{"initialize service", args{repo: nil}, Service{repo: nil}},
+		{"initialize service", args{repo: nil}, New(nil)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -44,9 +48,8 @@ func TestService_ApplyCoupon(t *testing.T) {
 	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
-				repo: tt.fields.repo,
-			}
+			s := New(tt.fields.repo)
+
 			gotB, err := s.ApplyCoupon(tt.args.basket, tt.args.code)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApplyCoupon() error = %v, wantErr %v", err, tt.wantErr)
@@ -78,9 +81,7 @@ func TestService_CreateCoupon(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Service{
-				repo: tt.fields.repo,
-			}
+			s := New(tt.fields.repo)
 
 			s.CreateCoupon(tt.args.discount, tt.args.code, tt.args.minBasketValue)
 		})
