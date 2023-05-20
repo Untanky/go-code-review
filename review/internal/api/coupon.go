@@ -47,7 +47,8 @@ func (a *api) CreateCoupon(c *gin.Context) {
 
 func (a *api) GetCoupon(c *gin.Context) {
 	couponRequest := apiEntity.CouponRequest{}
-	if err := c.ShouldBindJSON(&couponRequest); err != nil {
+	
+	if err := c.ShouldBindQuery(&couponRequest); err != nil {
 		log.Printf("error binding get coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return

@@ -22,9 +22,10 @@ const (
 func main() {
 	svc := service.New(repo)
 	api := api.New(cfg.API, svc)
+	log.Println("Starting Coupon service server")
 	api.Start()
 	defer api.Close()
-	log.Println("Starting Coupon service server")
+	log.Println("Started Coupon service server")
 	<-time.After(1 * year)
 	log.Println("Coupon service server alive for a year, closing")
 }
