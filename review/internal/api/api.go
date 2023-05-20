@@ -26,6 +26,7 @@ type api struct {
 }
 
 func New(cfg config.ApiConfig, svc Service) *api {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 
