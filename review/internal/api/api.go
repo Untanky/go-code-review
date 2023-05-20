@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"coupon_service/internal/entity"
 	"coupon_service/internal/config"
+	"coupon_service/internal/entity"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,29 +18,29 @@ type Service interface {
 	GetCoupons([]string) ([]entity.Coupon, error)
 }
 
-type API struct {
+type api struct {
 	srv *http.Server
 	gin *gin.Engine
 	svc Service
 	cfg config.ApiConfig
 }
 
-func New(cfg config.ApiConfig, svc Service) API {
+func New(cfg config.ApiConfig, svc Service) *api {
 	gin.SetMode(gin.ReleaseMode)
-	r := new(gin.Engine)
-	r = gin.New()
+	r := gin.New()
 	r.Use(gin.Recovery())
 
-	return API{
+	api := &api{
 		gin: r,
 		cfg: cfg,
 		svc: svc,
-	}.withServer()
+	}
+	return api.withServer().withRoutes()
 }
 
-func (a API) withServer() API {
+func (a *api) withServer() *api {
 
-	ch := make(chan API)
+	ch := make(chan *api)
 	go func() {
 		a.srv = &http.Server{
 			Addr:    fmt.Sprintf(":%d", a.cfg.Port),
@@ -52,7 +52,7 @@ func (a API) withServer() API {
 	return <-ch
 }
 
-func (a API) withRoutes() API {
+func (a *api) withRoutes() *api {
 	apiGroup := a.gin.Group("/api")
 	apiGroup.POST("/apply", a.Apply)
 	apiGroup.POST("/create", a.Create)
@@ -60,13 +60,13 @@ func (a API) withRoutes() API {
 	return a
 }
 
-func (a API) Start() {
+func (a *api) Start() {
 	if err := a.srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (a API) Close() {
+func (a *api) Close() {
 	<-time.After(5 * time.Second)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
