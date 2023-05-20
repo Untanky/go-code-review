@@ -26,16 +26,15 @@ type api struct {
 }
 
 func New(cfg config.ApiConfig, svc Service) *api {
-	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(gin.Recovery())
+	router.Use(gin.Recovery(), gin.Logger(), gin.ErrorLogger())
 
 	api := &api{
 		gin: router,
 		cfg: cfg,
 		svc: svc,
 	}
-	return api.withServer().withRoutes()
+	return api.withServer().withRoutesV1().withRoutesV2()
 }
 
 func (a *api) withServer() *api {
@@ -47,7 +46,7 @@ func (a *api) withServer() *api {
 	return a
 }
 
-func (a *api) withRoutes() *api {
+func (a *api) withRoutesV1() *api {
 	// we'll keep this routes for backward compatibility
 	// but this does not follow RESTful API design
 	apiGroup := a.gin.Group("/api")
@@ -55,10 +54,17 @@ func (a *api) withRoutes() *api {
 	apiGroup.POST("/create", a.CreateCoupon)
 	apiGroup.GET("/coupons", a.GetCoupons)
 
+	return a
+}
+
+func (a *api) withRoutesV2() *api {
+	basicAuth := gin.BasicAuth(gin.Accounts{"admin": "super"})
+
 	couponV2 := a.gin.Group("/api/v2/coupon")
 	couponV2.POST("/apply", a.ApplyCoupon)
-	couponV2.POST("", a.CreateCoupon)
-	couponV2.GET("", a.GetCoupons)
+	couponV2.POST("", basicAuth, a.CreateCoupon)
+	couponV2.GET("", basicAuth, a.GetCoupons)
+
 	return a
 }
 
