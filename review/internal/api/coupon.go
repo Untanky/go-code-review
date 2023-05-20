@@ -1,14 +1,15 @@
 package api
 
 import (
-	. "coupon_service/internal/api/entity"
+	apiEntity "coupon_service/internal/api/entity"
+	"coupon_service/internal/entity"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (a *API) Apply(c *gin.Context) {
-	apiReq := ApplicationRequest{}
+	apiReq := apiEntity.ApplicationRequest{}
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
@@ -21,7 +22,7 @@ func (a *API) Apply(c *gin.Context) {
 }
 
 func (a *API) Create(c *gin.Context) {
-	apiReq := Coupon{}
+	apiReq := entity.Coupon{}
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}
@@ -33,7 +34,7 @@ func (a *API) Create(c *gin.Context) {
 }
 
 func (a *API) Get(c *gin.Context) {
-	apiReq := CouponRequest{}
+	apiReq := apiEntity.CouponRequest{}
 	if err := c.ShouldBindJSON(&apiReq); err != nil {
 		return
 	}

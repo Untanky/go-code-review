@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"coupon_service/internal/service/entity"
+	"coupon_service/internal/entity"
 	"fmt"
 	"log"
 	"net/http"

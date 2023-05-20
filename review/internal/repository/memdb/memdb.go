@@ -1,7 +1,7 @@
 package memdb
 
 import (
-	"coupon_service/internal/service/entity"
+	"coupon_service/internal/entity"
 	"fmt"
 )
 

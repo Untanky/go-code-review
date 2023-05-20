@@ -1,28 +1,28 @@
 package service
 
 import (
-	. "coupon_service/internal/service/entity"
+	"coupon_service/internal/entity"
 	"fmt"
 
 	"github.com/google/uuid"
 )
 
 type Repository interface {
-	FindByCode(string) (*Coupon, error)
-	Save(*Coupon) error
+	FindByCode(string) (*entity.Coupon, error)
+	Save(*entity.Coupon) error
 }
 
 type Service struct {
 	repo Repository
 }
 
-func New(repo Repository) Service {
-	return Service{
+func New(repo Repository) *Service {
+	return &Service{
 		repo: repo,
 	}
 }
 
-func (s *Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
+func (s *Service) ApplyCoupon(basket entity.Basket, code string) (b *entity.Basket, e error) {
 	b = &basket
 	coupon, err := s.repo.FindByCode(code)
 	if err != nil {
@@ -41,7 +41,7 @@ func (s *Service) ApplyCoupon(basket Basket, code string) (b *Basket, e error) {
 }
 
 func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) error {
-	coupon := Coupon{
+	coupon := entity.Coupon{
 		Discount:       discount,
 		Code:           code,
 		MinBasketValue: minBasketValue,
@@ -54,8 +54,8 @@ func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) er
 	return nil
 }
 
-func (s *Service) GetCoupons(codes []string) ([]*Coupon, error) {
-	coupons := make([]*Coupon, 0, len(codes))
+func (s *Service) GetCoupons(codes []string) ([]*entity.Coupon, error) {
+	coupons := make([]*entity.Coupon, 0, len(codes))
 	var e error = nil
 
 	for idx, code := range codes {
@@ -81,4 +81,6 @@ func appendError(currentError error, nextError error) error {
 	} else {
 		currentError = fmt.Errorf("%w; %w", currentError, nextError)
 	}
+
+	return currentError
 }
