@@ -14,12 +14,17 @@ var (
 	repo = memdb.New()
 )
 
+const (
+	day = time.Hour * 24
+	year = day * 365
+)
+
 func main() {
 	svc := service.New(repo)
-	本 := api.New(cfg.API, svc)
-	本.Start()
+	api := api.New(cfg.API, svc)
+	api.Start()
+	defer api.Close()
 	fmt.Println("Starting Coupon service server")
-	<-time.After(1 * time.Hour * 24 * 365)
+	<-time.After(1 * year)
 	fmt.Println("Coupon service server alive for a year, closing")
-	本.Close()
 }
