@@ -10,13 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (a *api) Apply(c *gin.Context) {
+func (a *api) ApplyCoupon(c *gin.Context) {
 	applyRequest := apiEntity.ApplyCouponRequest{}
 	if err := c.ShouldBindJSON(&applyRequest); err != nil {
 		log.Printf("error binding apply coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
+
 	basket, err := a.svc.ApplyCoupon(applyRequest.Basket, applyRequest.Code)
 	if err != nil {
 		log.Printf("error applying coupon: %v\n", err)
@@ -27,13 +28,14 @@ func (a *api) Apply(c *gin.Context) {
 	c.JSON(http.StatusOK, basket)
 }
 
-func (a *api) Create(c *gin.Context) {
+func (a *api) CreateCoupon(c *gin.Context) {
 	coupon := entity.Coupon{}
 	if err := c.ShouldBindJSON(&coupon); err != nil {
 		log.Printf("error binding create coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
+
 	err := a.svc.CreateCoupon(coupon.Discount, coupon.Code, coupon.MinBasketValue)
 	if err != nil {
 		log.Printf("error creating coupon: %v\n", err)
@@ -43,13 +45,14 @@ func (a *api) Create(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (a *api) Get(c *gin.Context) {
+func (a *api) GetCoupon(c *gin.Context) {
 	couponRequest := apiEntity.CouponRequest{}
 	if err := c.ShouldBindJSON(&couponRequest); err != nil {
 		log.Printf("error binding get coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
+
 	coupons, err := a.svc.GetCoupons(couponRequest.Codes)
 	if err != nil {
 		log.Printf("error getting coupons: %v\n", err)

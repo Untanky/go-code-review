@@ -54,9 +54,9 @@ func (a *api) withServer() *api {
 
 func (a *api) withRoutes() *api {
 	apiGroup := a.gin.Group("/api")
-	apiGroup.POST("/apply", a.Apply)
-	apiGroup.POST("/create", a.Create)
-	apiGroup.GET("/coupons", a.Get)
+	apiGroup.POST("/apply", a.ApplyCoupon)
+	apiGroup.POST("/create", a.CreateCoupon)
+	apiGroup.GET("/coupons", a.GetCoupon)
 	return a
 }
 
