@@ -9,7 +9,7 @@ import (
 
 type Repository interface {
 	FindByCode(string) (*entity.Coupon, error)
-	Save(entity.Coupon) error
+	Save(*entity.Coupon) error
 }
 
 type Service struct {
@@ -48,7 +48,7 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) any
 		ID:             uuid.NewString(),
 	}
 
-	if err := s.repo.Save(coupon); err != nil {
+	if err := s.repo.Save(&coupon); err != nil {
 		return err
 	}
 	return nil
