@@ -22,14 +22,13 @@ func New(repo Repository) Service {
 	}
 }
 
-func (s *Service) ApplyCoupon(basket entity.Basket, code string) (b *entity.Basket, e error) {
-	b = &basket
-	var err error = nil
+func (s *Service) ApplyCoupon(basket entity.Basket, code string) (*entity.Basket, error) {
+	b := &basket
 	if b.Value < 0 {
 		return nil, fmt.Errorf("tried to apply discount to negative value")
 	}
 	if b.Value == 0 {
-		return
+		return b, nil
 	}
 
 	coupon, err := s.repo.FindByCode(code)
@@ -45,7 +44,7 @@ func (s *Service) ApplyCoupon(basket entity.Basket, code string) (b *entity.Bask
 	b.AppliedCode = coupon.Code
 	b.AppliedDiscount = coupon.Discount
 	b.ApplicationSuccessful = true
-	return
+	return b, nil
 }
 
 func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) any {
@@ -56,10 +55,7 @@ func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) an
 		ID:             uuid.NewString(),
 	}
 
-	if err := s.repo.Save(&coupon); err != nil {
-		return err
-	}
-	return nil
+	return s.repo.Save(&coupon)
 }
 
 func (s *Service) GetCoupons(codes []string) ([]entity.Coupon, error) {
