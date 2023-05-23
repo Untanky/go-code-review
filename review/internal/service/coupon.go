@@ -65,14 +65,14 @@ func (s *Service) GetCoupons(codes []string) ([]entity.Coupon, error) {
 	for idx, code := range codes {
 		coupon, err := s.repo.FindByCode(code)
 		if err != nil {
-			if e == nil {
-				e = fmt.Errorf("code: %s, index: %d", code, idx)
-			} else {
-				e = fmt.Errorf("%w; code: %s, index: %d", e, code, idx)
-			}
+			e = appendError(e, CouponError{code, idx, err})
+		} else {
+			coupons = append(coupons, *coupon)
 		}
-		coupons = append(coupons, *coupon)
+	}
+	if e != nil {
+		return nil, e
 	}
 
-	return coupons, e
+	return coupons, nil
 }
