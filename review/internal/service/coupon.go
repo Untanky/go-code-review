@@ -22,25 +22,33 @@ func New(repo Repository) Service {
 	}
 }
 
-func (s Service) ApplyCoupon(basket entity.Basket, code string) (b *entity.Basket, e error) {
+func (s *Service) ApplyCoupon(basket entity.Basket, code string) (b *entity.Basket, e error) {
 	b = &basket
-	coupon, err := s.repo.FindByCode(code)
-	if err != nil {
-		return nil, err
-	}
-
-	if b.Value > 0 {
-		b.AppliedDiscount = coupon.Discount
-		b.ApplicationSuccessful = true
+	var err error = nil
+	if b.Value < 0 {
+		return nil, fmt.Errorf("tried to apply discount to negative value")
 	}
 	if b.Value == 0 {
 		return
 	}
 
-	return nil, fmt.Errorf("Tried to apply discount to negative value")
+	coupon, err := s.repo.FindByCode(code)
+	if err != nil {
+		return nil, err
+	}
+
+	if coupon.MinBasketValue > b.Value {
+		return nil, fmt.Errorf("basket value is too low")
+	}
+
+	// FOLLOWUP: Do we need to subtract the discount from the basket value?
+	b.AppliedCode = coupon.Code
+	b.AppliedDiscount = coupon.Discount
+	b.ApplicationSuccessful = true
+	return
 }
 
-func (s Service) CreateCoupon(discount int, code string, minBasketValue int) any {
+func (s *Service) CreateCoupon(discount int, code string, minBasketValue int) any {
 	coupon := entity.Coupon{
 		Discount:       discount,
 		Code:           code,
@@ -54,7 +62,7 @@ func (s Service) CreateCoupon(discount int, code string, minBasketValue int) any
 	return nil
 }
 
-func (s Service) GetCoupons(codes []string) ([]entity.Coupon, error) {
+func (s *Service) GetCoupons(codes []string) ([]entity.Coupon, error) {
 	coupons := make([]entity.Coupon, 0, len(codes))
 	var e error = nil
 

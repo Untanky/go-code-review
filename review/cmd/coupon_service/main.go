@@ -21,7 +21,7 @@ const (
 
 func main() {
 	svc := service.New(repo)
-	api := api.New(cfg.API, svc)
+	api := api.New(cfg.API, &svc)
 	log.Println("Starting Coupon service server")
 	api.Start()
 	defer api.Close()

@@ -63,7 +63,7 @@ func (a *api) withRoutesV2() *api {
 	couponV2 := a.gin.Group("/api/v2/coupon")
 	couponV2.POST("/apply", a.ApplyCoupon)
 	couponV2.POST("", basicAuth, a.CreateCoupon)
-	couponV2.GET("", basicAuth, a.GetCoupons)
+	couponV2.GET("", basicAuth, a.GetCoupons) // depending on the use case, this does not need to be authenticated 
 
 	return a
 }
