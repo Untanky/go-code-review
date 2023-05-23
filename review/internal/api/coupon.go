@@ -45,13 +45,29 @@ func (a *api) CreateCoupon(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (a *api) GetCoupons(c *gin.Context) {
+func (a *api) getCouponsBody(c *gin.Context) {
+	couponRequest := apiEntity.CouponRequest{}
+	if err := c.ShouldBind(&couponRequest); err != nil {
+		log.Printf("error binding get coupon request: %v\n", err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	a.getCoupons(c, couponRequest)
+}
+
+func (a *api) getCouponsQuery(c *gin.Context) {
 	couponRequest := apiEntity.CouponRequest{}
 	if err := c.ShouldBindQuery(&couponRequest); err != nil {
 		log.Printf("error binding get coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
+
+	a.getCoupons(c, couponRequest)
+}
+
+func (a *api) getCoupons(c *gin.Context, couponRequest apiEntity.CouponRequest) {
 
 	coupons, err := a.svc.GetCoupons(couponRequest.Codes)
 	if err != nil {
