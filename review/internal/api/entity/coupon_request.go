@@ -1,5 +1,5 @@
 package entity
 
 type CouponRequest struct {
-	Codes []string `json:"codes" binding:"required" query:"codes"`
+	Codes []string `json:"codes" binding:"required" form:"codes"`
 }

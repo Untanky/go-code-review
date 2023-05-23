@@ -4,6 +4,7 @@ import (
 	apiEntity "coupon_service/internal/api/entity"
 	"coupon_service/internal/entity"
 	"log"
+	"strings"
 
 	"net/http"
 
@@ -47,7 +48,7 @@ func (a *api) CreateCoupon(c *gin.Context) {
 
 func (a *api) getCouponsBody(c *gin.Context) {
 	couponRequest := apiEntity.CouponRequest{}
-	if err := c.ShouldBind(&couponRequest); err != nil {
+	if err := c.ShouldBindJSON(&couponRequest); err != nil {
 		log.Printf("error binding get coupon request: %v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
@@ -64,11 +65,15 @@ func (a *api) getCouponsQuery(c *gin.Context) {
 		return
 	}
 
+	// When binding from query, the codes are a comma separated string
+	// in the first element of the slice
+	// we should define the comma as the delimiter and split the string
+	couponRequest.Codes = strings.Split(couponRequest.Codes[0], ",")
+
 	a.getCoupons(c, couponRequest)
 }
 
 func (a *api) getCoupons(c *gin.Context, couponRequest apiEntity.CouponRequest) {
-
 	coupons, err := a.svc.GetCoupons(couponRequest.Codes)
 	if err != nil {
 		log.Printf("error getting coupons: %v\n", err)
