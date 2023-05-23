@@ -68,12 +68,13 @@ func (a *api) withRoutesV2() *api {
 	return a
 }
 
-func (a *api) Start() {
+func (a *api) Start() chan any {
 	go func() {
 		if err := a.srv.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
 	}()
+	return make(chan any)
 }
 
 func (a *api) Close() {
