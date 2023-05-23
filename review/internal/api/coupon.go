@@ -1,44 +1,78 @@
 package api
 
 import (
-	. "coupon_service/internal/api/entity"
+	apiEntity "coupon_service/internal/api/entity"
+	"coupon_service/internal/entity"
+	"log"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (a *API) Apply(c *gin.Context) {
-	apiReq := ApplicationRequest{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
+func (a *api) ApplyCoupon(c *gin.Context) {
+	applyRequest := apiEntity.ApplyCouponRequest{}
+	if err := c.ShouldBindJSON(&applyRequest); err != nil {
+		log.Printf("error binding apply coupon request: %v\n", err)
+		c.Status(http.StatusBadRequest)
 		return
 	}
-	basket, err := a.svc.ApplyCoupon(apiReq.Basket, apiReq.Code)
+
+	basket, err := a.svc.ApplyCoupon(applyRequest.Basket, applyRequest.Code)
 	if err != nil {
+		log.Printf("error applying coupon: %v\n", err)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	c.JSON(http.StatusOK, basket)
 }
 
-func (a *API) Create(c *gin.Context) {
-	apiReq := Coupon{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
+func (a *api) CreateCoupon(c *gin.Context) {
+	coupon := entity.Coupon{}
+	if err := c.ShouldBindJSON(&coupon); err != nil {
+		log.Printf("error binding create coupon request: %v\n", err)
+		c.Status(http.StatusBadRequest)
 		return
 	}
-	err := a.svc.CreateCoupon(apiReq.Discount, apiReq.Code, apiReq.MinBasketValue)
+
+	err := a.svc.CreateCoupon(coupon.Discount, coupon.Code, coupon.MinBasketValue)
 	if err != nil {
+		log.Printf("error creating coupon: %v\n", err)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 	c.Status(http.StatusOK)
 }
 
-func (a *API) Get(c *gin.Context) {
-	apiReq := CouponRequest{}
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
+func (a *api) getCouponsBody(c *gin.Context) {
+	couponRequest := apiEntity.CouponRequest{}
+	if err := c.ShouldBind(&couponRequest); err != nil {
+		log.Printf("error binding get coupon request: %v\n", err)
+		c.Status(http.StatusBadRequest)
 		return
 	}
-	coupons, err := a.svc.GetCoupons(apiReq.Codes)
+
+	a.getCoupons(c, couponRequest)
+}
+
+func (a *api) getCouponsQuery(c *gin.Context) {
+	couponRequest := apiEntity.CouponRequest{}
+	if err := c.ShouldBindQuery(&couponRequest); err != nil {
+		log.Printf("error binding get coupon request: %v\n", err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	a.getCoupons(c, couponRequest)
+}
+
+func (a *api) getCoupons(c *gin.Context, couponRequest apiEntity.CouponRequest) {
+
+	coupons, err := a.svc.GetCoupons(couponRequest.Codes)
 	if err != nil {
+		log.Printf("error getting coupons: %v\n", err)
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 	c.JSON(http.StatusOK, coupons)
